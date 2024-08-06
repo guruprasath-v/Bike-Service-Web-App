@@ -1,12 +1,14 @@
 import express from "express";
+import bookingController from "../controllers/bookingController";
+import authChecker, { adminRoleCheck } from "../middlewares/authCheck";
 
 const router = express.Router();
 
 
 
-router.get("/", (req, res) => {
-    res.json({"mesage":"There are billions of bookings here"});
-});
+router.post("/", authChecker, bookingController.creatBookingController);
+router.delete("/:id", authChecker, bookingController.deleteBookingController);
+router.put("/:id", authChecker, adminRoleCheck, bookingController.updateBookingStateController);
 
 
 

@@ -1,0 +1,17 @@
+# Global Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Backend specific
+/Backend/node_modules/
+/Backend/.env
+/Backend/coverage/
+
+# Client specific
+/Client/node_modules/
+/Client/.env
+/Client/build/
+/Client/dist/

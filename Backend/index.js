@@ -13,8 +13,13 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-app.use(cors());
+// CORS configuration
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your frontend origin
+    credentials: true, // Allow credentials (cookies, HTTP authentication)
+}));
 app.use(cookieParser());
+
 
 
 
@@ -29,5 +34,5 @@ app.listen(process.env.PORT, (err)=>{
 
 
 app.use("/users", userRouter);
-app.use('/bookings', bookingRouter);
 app.use('/services', serviceRouter);
+app.use('/bookings', bookingRouter);
