@@ -5,9 +5,9 @@ import uuidGen from "../helpers/uuidGen.js";
 const getServicesController = async (req, res) => {
     const result = await serviceModels.getAllServices();
     if(result.success == true){
-        res.status(result.code).json({message:result.message, body:result.body});
+        res.status(result.code).json(result);
     }else{
-        res.status(result.code).json({message:result.message, body:''});
+        res.status(result.code).json(result);
     }
 }
 
@@ -17,7 +17,7 @@ const createServiceController = async (req, res) => {
     }
     const servId = uuidGen();
     const servData = {...req.body, servId:servId};
-    const result = serviceModels.createNewServices(servData);
+    const result = await serviceModels.createNewServices(servData);
     res.status(result.code).json(result);
 }
 

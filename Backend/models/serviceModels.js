@@ -2,7 +2,7 @@ import db from "../config/dbConfig.js";
 import resp from "../helpers/backendResponding.js";
 
 const getAllServices = async () => {
-    const query = "SELECT * FROM services LIMIT 10";
+    const query = "SELECT * FROM services";
     try{
         const [services] = await db.execute(query);
         if(services.length > 0){
@@ -11,6 +11,15 @@ const getAllServices = async () => {
                 true, 
                 "Services Fetched", 
                 "All Services fetched", 
+                services, 
+                ''
+            )
+        }else{
+            return resp(
+                204, 
+                true, 
+                "There is no service available", 
+                "No Services fetched", 
                 services, 
                 ''
             )
@@ -30,11 +39,13 @@ const getAllServices = async () => {
 }
 
 const createNewServices = async (serviceData) => {
+    // console.log(serviceData);
     const { servId, servName, fee, timeTaken, description, category } = serviceData;
     const query = "INSERT INTO services (servId, servName, fee, timeTaken, description, category) VALUES (?, ?, ?, ?, ?, ?)";
     const values = [servId, servName, fee, timeTaken, description, category]
     try{
         await db.execute(query, values);
+        console.log("Service Created");
         return resp(
             200, 
             true, 

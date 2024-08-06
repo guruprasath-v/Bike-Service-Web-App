@@ -2,6 +2,8 @@ import db from "../config/dbConfig.js";
 import resp from "../helpers/backendResponding.js";
 
 
+
+
 const createUser = async (userData) => {
     const { userName, city, displayName, doorNo, postalCode, state, street, userMobile, userPassword, userId, userRole} = userData;
     const query = "INSERT INTO users (userId, userName, userPassword, userMobile, displayName, doorNo, street, city, state, postalCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -54,7 +56,8 @@ const validateUser = async (userData) => {
                 "User Found", 
                 "User found with given userName in DB", 
                 rows[0], 
-                ''
+                '',
+                rows[0].userRole
             )
         }
         else{
@@ -64,7 +67,8 @@ const validateUser = async (userData) => {
                 "User Not Found", 
                 "User Can't be found with given userName in DB", 
                 '', 
-                'You can try checking spelling of user or create new user and try again'
+                'You can try checking spelling of user or create new user and try again',
+                ''
             )
         }
     }
@@ -75,7 +79,8 @@ const validateUser = async (userData) => {
             "Error in connecting to database", 
             "Can't try out checking", 
             '', 
-            'Try again later'
+            'Try again later',
+            ''
         )
     }
     
@@ -84,7 +89,7 @@ const validateUser = async (userData) => {
 
 const adminBasicFetchPending = async () => {
     const query = `
-    SELECT b.bookingId, u.userName, u.displayName, u.userMobile, b.bookedDate, b.state, b.vehicleNo, b.vehicleModel, GROUP_CONCAT(s.servName)
+    SELECT b.bookingId, u.userName, u.displayName, u.userMobile, b.bookedDate, b.state, b.vehicleNo, b.vehicleModel, GROUP_CONCAT(s.servName) AS services
     FROM 
     bookings b
     JOIN 
@@ -94,7 +99,7 @@ const adminBasicFetchPending = async () => {
     JOIN 
     services s ON bs.serviceId = s.servId
     WHERE 
-    b.state IN ('Pending', 'Ready for delivery')
+    b.state IN ('pending', 'ready-for-delivery')
     GROUP BY 
     b.bookingId, u.userName, b.bookedDate, b.state, b.vehicleNo, b.vehicleModel
     LIMIT 30
@@ -136,51 +141,53 @@ const adminBasicFetchPending = async () => {
 
 const customerBookingsFetch = async (userId) => {
     const query = `
-    SELECT b.bookingId, u.userName, u.displayName, u.userMobile, b.bookedDate, b.state, b.vehicleNo, b.vehicleModel, GROUP_CONCAT(s.servName)
+    SELECT b.bookingId, u.userName, u.displayName, u.userMobile, b.bookedDate, b.state, b.vehicleNo, b.vehicleModel, GROUP_CONCAT(s.servName) AS services
     FROM bookings b
     JOIN users u ON b.userId = u.userId
     JOIN bookings_services bs ON b.bookingId = bs.bookingId
     JOIN services s ON bs.serviceId = s.servId
-    WHERE u.userId = ${userId}
+    WHERE u.userId = ?
     GROUP BY b.bookingId, u.userName, u.displayName, u.userMobile, b.bookedDate, b.vehicleNo, b.vehicleModel
     `
 
-    try{
-        const [rows] = await db.execute(query);
-        if(rows.length>0){
+    try {
+        const [rows] = await db.execute(query, [userId]);
+
+        if (rows.length > 0) {
             return resp(
-                200, 
-                true, 
-                "User Bookings fetched", 
-                "All Pending bookings fetched", 
-                rows, 
+                200,
+                true,
+                "User Bookings Fetched",
+                "All bookings fetched successfully.",
+                rows,
                 ''
-            )
-        }else{
+            );
+        } else {
             return resp(
-                200, 
-                false, 
-                "No details available", 
-                "There is no booked details ", 
-                '', 
+                200,
+                false,
+                "No Details Available",
+                "The user has no bookings.",
+                [],
                 ''
-            )
+            );
         }
-    }catch(err){
+    } catch (err) {
+        console.error("Database error:", err); // Log the error for debugging
         return resp(
-            500, 
-            false, 
-            "Error in connecting to database", 
-            "Can't try out checking", 
-            '', 
-            'Try again later'
-        )
+            500,
+            false,
+            "Error Connecting to Database",
+            "Unable to fetch bookings. Please try again later.",
+            '',
+            'An unexpected error occurred. Please try again later.'
+        );
     }
 }
 
 
 const adminFetchAllBookings = async (queries) => {
-    const { startDate, endDate, state } = req.query;
+    const { startDate, endDate, state } = queries;
     let conditions = [];
 
     if (startDate && endDate) {
@@ -205,7 +212,7 @@ const adminFetchAllBookings = async (queries) => {
             b.state, 
             b.vehicleNo, 
             b.vehicleModel, 
-            GROUP_CONCAT(s.servName)
+            GROUP_CONCAT(s.servName) AS services
         FROM 
             bookings b
         JOIN 
@@ -229,11 +236,11 @@ const adminFetchAllBookings = async (queries) => {
 
 const findUserName = async (userId) => {
     try{
-        const userNameQuery = `SELECT userName, dispName FROM users WHERE userId = ${userId}`;
-        cnost [userDetails] = await db.execute(userNameQuery);
+        const userNameQuery = `SELECT userName, displayName FROM users WHERE userId = ?`;
+        const [userDetails] = await db.execute(userNameQuery, [userId]);
         return resp(200, true, "User Name Retrieved", "", userDetails[0], "");
     }catch(e){
-        return resp(500, false, "Error Fetching Bookings", err.message, "", "");
+        return resp(500, false, "Error Fetching Bookings", e.message, "", "");
     }
 
 
@@ -241,11 +248,11 @@ const findUserName = async (userId) => {
 
 const findAdminName = async () => {
     try{
-        const userNameQuery = `SELECT userName, dispName FROM users WHERE userRole = Admin`;
-        cnost [adminDetails] = await db.execute(userNameQuery);
+        const userNameQuery = `SELECT userName, displayName FROM users WHERE userRole = ?`;
+        const [adminDetails] = await db.execute(userNameQuery, ["Admin"]);
         return resp(200, true, "User Name Retrieved", "", adminDetails[0], "");
     }catch(e){
-        return resp(500, false, "Error Fetching Bookings", err.message, "", "");
+        return resp(500, false, "Error Fetching Bookings", e.message, "", "");
     }
 }
 

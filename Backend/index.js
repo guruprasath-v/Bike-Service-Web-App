@@ -20,6 +20,11 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
+app.use((req, res, next)=>{
+    console.log("Request received at: ", new Date());
+    next();
+})
+
 
 
 
@@ -32,7 +37,9 @@ app.listen(process.env.PORT, (err)=>{
     }
 });
 
-
-app.use("/users", userRouter);
-app.use('/services', serviceRouter);
-app.use('/bookings', bookingRouter);
+app.use("/api/users", userRouter);
+app.use('/api/services', serviceRouter);
+app.use('/api/bookings', bookingRouter);
+app.use('/api/auth/logout', (req, res) => {
+    res.clearCookie('euuid').send({ success: true });
+});

@@ -10,8 +10,9 @@ dotenv.config();
 
 
 const createUserController = async (req, res) => {
+    console.log(req.body);
     // Validate if all required fields are present
-    if (Object.keys(req.body).length < 10) {
+    if (Object.keys(req.body).length < 9) {
         return res.status(400).json(resp(400, false, "All fields are required", "Some empty fields are there cant process creation of user","", "Please recheck all your input fields and try again"));
     }
     
@@ -40,7 +41,7 @@ const userLoginController = async(req, res) => {
 
 const userDetailsController = async(req, res) => {
     if(req.user.userRole === "Admin"){
-        const result = await userModels.adminBasicFetchPending(req.user.userId);
+        const result = await userModels.adminBasicFetchPending();
         res.status(result.code).json(result);
     }
     if(req.user.userRole === "Customer"){

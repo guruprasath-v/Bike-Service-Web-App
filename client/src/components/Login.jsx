@@ -1,10 +1,31 @@
-import {useState} from "react";
-import Clicker from "../components/UserDashboard";
+import {useState, useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login(){
+    const navigate = useNavigate();
     const [userName, setUserName] = useState('');
     const [userPassword, setUserPassword] = useState('');
     const [resp, setResp] = useState({});
+
+
+    useEffect(() => {
+        // Fetch bookings data when component mounts
+        fetch(`${process.env.REACT_APP_BASE_URL_API}/users/me`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success == true){
+                navigate('/users/me/');
+            };
+        })
+    }, []);
+
+
 
     const submitApi = async (e) => {
         e.preventDefault();
@@ -14,7 +35,7 @@ export default function Login(){
         }
         setUserName('');
         setUserPassword('');
-        fetch("http://localhost:8080/users/login", {
+        fetch(`${process.env.REACT_APP_BASE_URL_API}/users/login`, {
             method: 'POST',
             headers:{
                 'Content-Type': 'application/json'
@@ -24,6 +45,12 @@ export default function Login(){
         }).then (async mess => {
             const respoMess = await mess.json();
             setResp(respoMess);
+            console.log(respoMess);
+            if(respoMess.role === "Customer"){
+                navigate('/users/me/');
+            }else if(respoMess.role === 'Admin'){
+                navigate('/users/admin/');
+            }
             setTimeout(() => {
                 setResp('');
             }, 4000);
@@ -39,7 +66,7 @@ export default function Login(){
                     setUserName(e.target.value);
                 }}/>
                 <label htmlFor="userPassword">Password</label>
-                <input name="userPassword" type="password" placeholder="Enter your email" value={userPassword} required onChange={(e) => {
+                <input name="userPassword" type="password" placeholder="Enter your password" value={userPassword} required onChange={(e) => {
                     setUserPassword(e.target.value);
                 }}/>
                 <button>Submit</button>
@@ -47,7 +74,6 @@ export default function Login(){
             {resp && <div>{resp.message}</div>}
             {resp && <div>{resp.suggestedAction}</div>}
 
-            <Clicker />
 
         </div>
     )

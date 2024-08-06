@@ -5,79 +5,84 @@ import Modal from 'react-modal';
 // Ensure Modal has an accessible app element
 Modal.setAppElement('#root');
 
-export default function UserDashboard() {
-    const [bookings, setBookings] = useState([]);
-    const [error, setError] = useState("");
+export default function AdminDashboard() {
+    const [pendingBookings, setPendingBookings] = useState([]);
+    const [readyForDeliveryBookings, setReadyForDeliveryBookings] = useState([]);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const navigate = useNavigate(); // For navigation
+    const [newState, setNewState] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        // Fetch bookings data when component mounts
+    const fetchBookings = () => {
         fetch(`${process.env.REACT_APP_BASE_URL_API}/users/me`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             credentials: 'include'
         })
         .then(response => response.json())
         .then(data => {
-            if (data.message === "Unauthorized" || data.message === "No Token Provided" || data.message === "jwt expired" || data.message === "jwt malformed") {
+            console.log(data)
+            if(data.message === "Unauthorized" || data.message === "No Token Provided" || data.message === "jwt expired" || data.message === "jwt malformed"){
                 navigate('/');
             }
-            setBookings(data.body);
+            const pending = data.body && data.body.length > 0 && data.body.filter(booking => booking.state === 'pending');
+            const readyForDelivery = data.body && data.body.length > 0 && data.body.filter(booking => booking.state === 'ready-for-delivery');
+            setPendingBookings(pending);
+            setReadyForDeliveryBookings(readyForDelivery);
         })
         .catch(err => {
             console.error("Error fetching bookings:", err);
             setError("Failed to fetch bookings.");
         });
+    };
+
+    useEffect(() => {
+        // Fetch all bookings data when component mounts
+        fetchBookings();
     }, []);
 
     const handleRowClick = (bookingId) => {
-        const booking = bookings.find(b => b.bookingId === bookingId);
+        const booking = pendingBookings && pendingBookings.find(b => b.bookingId === bookingId) || readyForDeliveryBookings.find(b => b.bookingId === bookingId);
         setSelectedBooking(booking);
+        setNewState(booking.state);
         setIsModalOpen(true);
-        console.log('Booking selected:', booking);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedBooking(null);
-        console.log('Modal closed');
     };
 
-    const handleDelete = async () => {
+    const handleSave = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_BASE_URL_API}/bookings/${selectedBooking.bookingId}`, {
-                method: 'DELETE',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include'
+                credentials: 'include',
+                body: JSON.stringify({ state: newState })
             });
 
             const result = await response.json();
 
             if (result.success) {
-                setBookings(bookings && bookings.filter(b => b.bookingId !== selectedBooking.bookingId));
                 handleCloseModal();
+                window.location.reload();  // Reload the page to update counts and bookings
             } else {
-                setError("Failed to delete booking.");
+                setError("Failed to update booking state.");
             }
         } catch (err) {
-            console.error("Error deleting booking:", err);
-            setError("Failed to delete booking.");
+            console.error("Error updating booking state:", err);
+            setError("Failed to update booking state.");
         }
     };
 
-    // Categorize bookings
-    const currentBookings = bookings && bookings.filter(b => b.state === 'pending' || b.state === 'ready for delivery');
-    const pastBookings = bookings && bookings.filter(b => b.state === 'completed');
-
-    // Summary counts
-    const currentCount = currentBookings.length || 0;
-    const completedCount = pastBookings.length || 0;
+    const pendingCount = pendingBookings && pendingBookings.length;
+    const readyForDeliveryCount = readyForDeliveryBookings && readyForDeliveryBookings.length;
 
     return (
         <div className="dashboard">
@@ -85,8 +90,9 @@ export default function UserDashboard() {
             <nav className="navbar">
                 <div className="logo">YourLogo</div>
                 <div className="nav-links">
-                    <a href="/users/me" className="nav-link">Dashboard</a>
-                    <a href="/users/me/bookservice" className="nav-link">Book-Service</a>
+                    <a href="/users/admin" className="nav-link">Dashboard</a>
+                    <a href="/users/admin/allbookings" className="nav-link">All Bookings</a>
+                    <a href="/users/admin/services" className="nav-link">All Services</a>
                     <a href="/users/logout">Logout</a>
                 </div>
             </nav>
@@ -94,20 +100,20 @@ export default function UserDashboard() {
             {/* Summary Boxes */}
             <div className="summary-boxes">
                 <div className="summary-box">
-                    <h3>Current Bookings</h3>
-                    <p>{currentCount}</p>
+                    <h3>Pending Bookings</h3>
+                    <p>{pendingCount}</p>
                 </div>
                 <div className="summary-box">
-                    <h3>Completed Bookings</h3>
-                    <p>{completedCount}</p>
+                    <h3>Ready for Delivery Bookings</h3>
+                    <p>{readyForDeliveryCount}</p>
                 </div>
             </div>
 
             {/* Booking Sections */}
             <div className="booking-section">
-                <h2>Current Bookings</h2>
-                {currentBookings.length === 0 ? (
-                    <p>No current bookings.</p>
+                <h2>Pending Bookings</h2>
+                {pendingBookings.length === 0 ? (
+                    <p>No pending bookings.</p>
                 ) : (
                     <table>
                         <thead>
@@ -119,7 +125,7 @@ export default function UserDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentBookings.map(booking => (
+                            {pendingBookings.map(booking => (
                                 <tr className='indStyle' key={booking.bookingId} onClick={() => handleRowClick(booking.bookingId)}>
                                     <td>{booking.bookingId}</td>
                                     <td>{new Date(booking.bookedDate).toLocaleString()}</td>
@@ -133,9 +139,9 @@ export default function UserDashboard() {
             </div>
 
             <div className="booking-section">
-                <h2>Past Bookings</h2>
-                {pastBookings.length === 0 ? (
-                    <p>No past bookings.</p>
+                <h2>Ready for Delivery Bookings</h2>
+                {readyForDeliveryBookings.length === 0 ? (
+                    <p>No ready for delivery bookings.</p>
                 ) : (
                     <table>
                         <thead>
@@ -146,8 +152,8 @@ export default function UserDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {pastBookings.map(booking => (
-                                <tr key={booking.bookingId} onClick={() => handleRowClick(booking.bookingId)}>
+                            {readyForDeliveryBookings.map(booking => (
+                                <tr className='indStyle' key={booking.bookingId} onClick={() => handleRowClick(booking.bookingId)}>
                                     <td>{booking.bookingId}</td>
                                     <td>{new Date(booking.bookedDate).toLocaleString()}</td>
                                     <td>{booking.state}</td>
@@ -171,7 +177,13 @@ export default function UserDashboard() {
                     <>
                         <p><strong>Booking ID:</strong> {selectedBooking.bookingId}</p>
                         <p><strong>Date:</strong> {new Date(selectedBooking.bookedDate).toLocaleString()}</p>
-                        <p><strong>State:</strong> {selectedBooking.state}</p>
+                        <p><strong>State:</strong> 
+                            <select value={newState} onChange={(e) => setNewState(e.target.value)}>
+                                <option value="pending">Pending</option>
+                                <option value="ready-for-delivery">Ready for Delivery</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </p>
                         <p><strong>Services Needed:</strong> {selectedBooking.services}</p>
                         <p><strong>Vehicle No:</strong> {selectedBooking.vehicleNo}</p>
                         <p><strong>Vehicle Model:</strong> {selectedBooking.vehicleModel}</p>
@@ -179,7 +191,7 @@ export default function UserDashboard() {
                         <p><strong>User Name:</strong> {selectedBooking.userName}</p>
                     </>
                 )}
-                <button onClick={handleDelete}>Delete Booking</button>
+                <button onClick={handleSave}>Save</button>
                 <button onClick={handleCloseModal}>Close</button>
             </Modal>
         </div>

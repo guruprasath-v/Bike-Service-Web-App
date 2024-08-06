@@ -6,7 +6,7 @@ const router = express.Router();
 
 
 
-router.get("/", authChecker, adminRoleCheck, serviceControllers.getServicesController);
+router.get("/", authChecker, serviceControllers.getServicesController);
 router.post("/", authChecker, adminRoleCheck, serviceControllers.createServiceController);
 router.put("/:id", authChecker, adminRoleCheck, serviceControllers.updateServiceController);
 router.delete("/:id", authChecker, adminRoleCheck, serviceControllers.deleteServiceController);
