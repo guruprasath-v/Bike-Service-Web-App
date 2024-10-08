@@ -39,7 +39,7 @@ npm install
 
 ### Create a ".env" file in the server directory and add your database credentials:
 
-PORT=8080
+```PORT=8080
 DB_HOST=your_host
 DB_USER=your_username_in_tidb
 DB_PASSWORD=your_password
@@ -51,6 +51,7 @@ CLIENT_SECRET=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
 REDIRECT_URI=https://developers.google.com/oauthplayground
 REFRESH_TOKEN=1//04y7FB9P8nC1aCgYIARAAGAQSNwF-L9IrxBtbsvBfE_S3UuamqZ2Nr2KSot6INsFnBQ44PZrgDR3uEP9S9Zhl6FfX_F3cRIWwwDE
 CREATOR_MAILID=guruprasathv.dev@gmail.com
+```
 
 
 ### Start the backend server:
