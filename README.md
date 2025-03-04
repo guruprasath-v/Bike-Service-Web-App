@@ -45,12 +45,6 @@ DB_USER=your_username_in_tidb
 DB_PASSWORD=your_password
 DB_NAME=your_db_name_in_tidbcloud.com
 DB_PORT=4000
-USER_SECRET_KEY=Hf6B#4vG8$yN3sA!Jr%kLf@Wm7cP2qZiT0xR9wUeX5&zYgD1p
-CLIENT_ID=946353326356-0phv1dlj95oqe1hedjn6bq915832jie3.apps.googleusercontent.com
-CLIENT_SECRET=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
-REDIRECT_URI=https://developers.google.com/oauthplayground
-REFRESH_TOKEN=1//04y7FB9P8nC1aCgYIARAAGAQSNwF-L9IrxBtbsvBfE_S3UuamqZ2Nr2KSot6INsFnBQ44PZrgDR3uEP9S9Zhl6FfX_F3cRIWwwDE
-CREATOR_MAILID=guruprasathv.dev@gmail.com
 ```
 
 
@@ -133,9 +127,7 @@ CREATE TABLE BookingServices (
 users:
 ```SQL
 userPassword	userMobile	displayName	doorNo	street	city	state	postalCode	userRole
-$2b$10$BzSzQ8SDV1lKTWR3do7IieQzIaDs.QctErh6LRAd.1.8yku27p6am	8667481775	Guruprasath V	X-145	x-145, North housing unit, Selvapuram, Coimbatore	Coimbatore	Tamil Nadu	641026	Admin
-$2b$10$44wvC2srMVygiNvW3xs16.hfbsdB1JH83lZDpL6RUnGuOVaB0Uwji	8667481775	pevert	X-145	north housing unit	Coimbatore	Tamil Nadu	641026	Customer
-$2b$10$Dx9xcSSCjazRYoTQ.fkgMe7/eJyOwcffhRWePfRc5POSYUYiWIiPG	6382061988	Samu	ts40	ms street	coimbatore	tamilnadu	641035	Customer
+$2b$10$BzSzQ8SDV1lKTWR3do7IieQzIaDs.QctErh6LRAd.1.8yku27p6am	12345678	Guruprasath V	X-145	xxx, North housing unit, Selvapuram, Coimbatore	Coimbatore	Tamil Nadu	641026	Admin
 ```
 
 
