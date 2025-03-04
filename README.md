@@ -54,19 +54,19 @@ DB_PORT=4000
 npm run devStart
 ```
 
-##Databasse Configuration
+## Databasse Configuration
 
-###The following is the database schema required for the application:
-###Enter into your sql editor in https://tidbcloud.com and there create a cluster you will get credentials enter this in .env files
+### The following is the database schema required for the application:
+### Enter into your sql editor in https://tidbcloud.com and there create a cluster you will get credentials enter this in .env files
 
-###schemas for all tables
-###Tables:
+### schemas for all tables
+### Tables:
 - [bookings](#bookings)
 - [users](#users)
 - [services](#services)
 - [bookings_services](#bookings_services)
 
-###Schemas:
+### Schemas:
 bookings:
 ```SQL
 CREATE TABLE Bookings (
@@ -141,22 +141,22 @@ f1bd3656-1bf1-4433-925b-2a024c974a53	Water Wash	100	1:30	Clean your bikes with c
 
 bookings can only be done through website
 
-###Move to frontend and start install packages
+### Move to frontend and start install packages
 ```bash
 cd ../client
 npm install
 ```
 
-###create .env in frontend root directory and add this
+### create .env in frontend root directory and add this
 REACT_APP_BASE_URL_API=http://localhost:8080/api
 
 
-###Start server
+### Start server
 ```bash
 npm start
 ```
 
-#Happie hacking
+# Happie hacking
 
 
 
